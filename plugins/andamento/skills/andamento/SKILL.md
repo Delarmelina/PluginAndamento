@@ -1,0 +1,18 @@
+---
+name: andamento
+description: Acompanhar visualmente a execução de implementações, abertura ou encerramento de sessão e pedidos com várias ações no painel Andamento, atualizando etapas por conversa. Não usar para perguntas simples sem execução.
+---
+
+Use o identificador real da conversa informado pelo gatilho do plugin como threadId. Nunca invente um identificador de chat. Se o gatilho não estiver ativo, use o identificador real disponível no contexto do aplicativo; se nenhum existir, explique a limitação antes de criar um plano solto.
+
+Antes de executar, crie etapas concretas e sucintas com start_plan. Use o identificador do turno como requestId quando disponível. Em continuação do mesmo pedido, consulte get_progress e atualize o plano existente; um novo pedido cria outro plano e preserva o histórico.
+
+Ao criar um plano, estime o tempo ativo de cada etapa em minutos e envie `stepEstimatesMinutes` na mesma ordem das etapas. São estimativas aproximadas; não inclua períodos de espera externa. Se uma etapa não puder ser estimada com responsabilidade, omita a lista para que o painel não invente um tempo restante. Para etapa em execução, envie `progressPercent` de 0 a 99 ao iniciar e revise-o em marcos significativos; 100% fica reservado para conclusão verificada. É uma estimativa de conclusão da etapa, não uma medição de tempo. Etapas concluídas ou dispensadas contam como 100%; pendentes ou bloqueadas como 0%. O painel calcula o progresso total ponderando pela duração estimada e mostra o tempo ativo restante; bloqueios são apresentados como tempo após desbloqueio.
+
+Mantenha o acompanhamento fora do fluxo do chat. Não publique checklist textual nem cartões inline. Ao iniciar o acompanhamento, use follow_progress com o threadId real para abrir diretamente o painel vinculado à conversa, sem seletor. Felipe aprovou a posição lateral já oferecida pelo Codex: preserve essa apresentação, sem exigir PiP, solicitar troca de modo ou criar janela externa. O valor técnico fullscreen não determina a geometria que Felipe vê. Abra uma vez, não em cada etapa. O painel já vinculado acompanha automaticamente os novos pedidos do mesmo chat. Se Felipe o fechar, só reabra quando ele pedir. open_panel permanece como acesso manual do aplicativo. view_progress é uma consulta de dados sem UI.
+
+Marque in_progress antes de iniciar uma etapa. Após conferir o resultado, marque completed com uma nota curta que descreva a evidência. Em caso de impedimento, marque blocked com a causa. Use skipped apenas para etapas realmente não aplicáveis ou dispensadas por Felipe.
+
+Atualize por marco significativo, sem criar uma etapa para cada chamada de ferramenta. Ao finalizar, releia o plano: etapas inacabadas permanecem pendentes ou bloqueadas. Não encerre o checklist artificialmente. O painel não substitui a execução, a verificação ou a resposta final.
+
+O painel é por conversa. A abertura direta fica presa ao threadId recebido e atualiza a cada dois segundos; não assume o chat mais recente. A abertura manual pela barra lateral continua com seletor e consulta a cada cinco segundos. Consultar view_progress não altera a seleção de uma interface já aberta. Não bloquear a leitura de etapas por falta de uma API de mudança de modo. Não afirme que os testes de integração comprovam a posição ou o modo de exibição no host real. Se as ferramentas estiverem indisponíveis, informe a limitação sucintamente, sem checklist no chat.

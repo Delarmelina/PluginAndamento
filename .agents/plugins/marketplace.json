@@ -1,0 +1,10 @@
+{
+  "name": "larry-local",
+  "interface": { "displayName": "Larry · Plugins locais" },
+  "plugins": [{
+    "name": "andamento",
+    "source": { "source": "local", "path": "./plugins/andamento" },
+    "policy": { "installation": "AVAILABLE", "authentication": "ON_INSTALL" },
+    "category": "Productivity"
+  }]
+}

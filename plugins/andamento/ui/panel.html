@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="pt-BR">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Andamento</title>
+<style>
+:root{color-scheme:dark;--surface-bg:#0b0b0d;--surface-1:#131316;--surface-2:#18181c;--border:#2a2a2f;--fg:#f4f5f7;--muted:#8e9099;--accent:#c99a4f;--success:#77cc9a;--error:#ee9191;--info:#85bbdd;--space-xs:4px;--space-sm:8px;--space-md:16px;--space-lg:24px;--radius:8px;font-family:var(--font-sans,Inter,system-ui,sans-serif);font-size:13px;line-height:1.5}
+*{box-sizing:border-box}html,body{background-color:var(--surface-bg);color:var(--fg)}body{margin:0;padding:var(--space-md);min-width:260px}button,select{font:inherit;color:var(--fg)}button,select,summary{cursor:pointer}button,select{background-color:var(--surface-1);border:1px solid var(--border);border-radius:var(--radius)}button{min-height:36px;padding:6px 10px}button:hover{background-color:var(--surface-2)}:focus-visible{outline:2px solid var(--accent);outline-offset:3px}header{display:flex;align-items:center;justify-content:space-between;gap:var(--space-sm);margin-bottom:var(--space-lg)}h1{font-size:16px;line-height:1.3;margin:0;font-weight:650}h2{font-size:17px;line-height:1.4;margin:0 0 var(--space-sm);font-weight:600;overflow-wrap:anywhere}.eyebrow{color:var(--muted);font-size:11px;letter-spacing:.07em;text-transform:uppercase;margin:0 0 6px}.muted{color:var(--muted)}#selectorLabel{display:block;color:var(--muted);font-size:12px;margin-bottom:var(--space-xs)}select{width:100%;min-height:38px;padding:6px 9px;margin-bottom:var(--space-md)}.summary{display:flex;justify-content:space-between;gap:var(--space-sm);color:var(--muted);font-size:12px;margin:var(--space-sm) 0}.meter{height:5px;border-radius:3px;overflow:hidden;background:var(--border);margin-bottom:var(--space-md)}.fill{height:100%;width:0;background:var(--accent);transition:width .2s}.steps{list-style:none;padding:0;margin:0}.step{display:grid;grid-template-columns:24px minmax(0,1fr);gap:var(--space-sm);padding:12px 0;border-bottom:1px solid var(--border)}.icon{display:flex;align-items:center;justify-content:center;width:21px;height:21px;border:1px solid var(--border);border-radius:50%;color:var(--muted);font-size:12px;font-weight:700}.completed .icon{border-color:var(--success);color:var(--success)}.in_progress .icon{border-color:var(--accent);color:var(--accent)}.blocked .icon{border-color:var(--error);color:var(--error)}.in_progress .label{font-weight:650}.label{margin:0;overflow-wrap:anywhere}.state{font-size:11px;color:var(--muted);display:block;margin-top:2px}.blocked .state{color:var(--error)}.in_progress .state{color:var(--accent)}details{font-size:12px;color:var(--muted);margin-top:6px}details p{margin:6px 0 0;white-space:pre-wrap;overflow-wrap:anywhere}summary{width:fit-content}#empty{padding:var(--space-lg) var(--space-md);border:1px dashed var(--border);border-radius:var(--radius);text-align:center}#empty p{margin:0 0 var(--space-sm)}#empty p:last-child{margin:0;font-size:12px}#connection{font-size:11px;color:var(--muted);margin-top:var(--space-md)}#error{padding:10px;border:1px solid var(--error);border-radius:var(--radius);color:var(--error);margin-bottom:var(--space-md);font-size:12px}#history{margin-top:var(--space-md)}.history-item{padding:var(--space-sm) 0;border-bottom:1px solid var(--border)}[hidden]{display:none!important}.badge{font-size:11px;border:1px solid var(--border);padding:3px 7px;border-radius:5px;color:var(--muted)}
+:root[data-theme=light]{color-scheme:light;--surface-bg:#fafafa;--surface-1:#fff;--surface-2:#f1f1f3;--border:#d4d4da;--fg:#26262c;--muted:#4f515a;--accent:#906321;--success:#267749;--error:#b52e37;--info:#266b94}
+@media(prefers-color-scheme:light){:root:not([data-theme]){color-scheme:light;--surface-bg:#fafafa;--surface-1:#fff;--surface-2:#f1f1f3;--border:#d4d4da;--fg:#26262c;--muted:#4f515a;--accent:#906321;--success:#267749;--error:#b52e37;--info:#266b94}}
+@media(max-width:380px){body{padding:12px}button,select{min-height:44px}.step{padding:12px 0}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+body:is([data-bound-panel],[data-auto-floating]){padding:12px}body:is([data-bound-panel],[data-auto-floating]) header{margin-bottom:12px}body:is([data-bound-panel],[data-auto-floating]) #chooser{display:none!important}body:is([data-bound-panel],[data-auto-floating]) .step{padding:9px 0}body:is([data-bound-panel],[data-auto-floating]) h2{font-size:15px}
+</style><style>
+.estimate-summary{display:grid;grid-template-columns:1fr auto;gap:4px 12px;align-items:baseline;margin:var(--space-sm) 0 6px}
+.estimate-label{font-size:11px;color:var(--muted)}
+.estimate-value{font-size:14px;font-weight:650;font-variant-numeric:tabular-nums;text-align:right}
+.estimate-hint{font-size:10px;color:var(--muted);margin:-2px 0 var(--space-md)}
+</style></head>
+<body>
+<header><h1>Andamento</h1><button id="refresh" type="button" aria-label="Atualizar andamento">Atualizar</button></header>
+<div id="error" role="alert" hidden></div>
+<section id="chooser" hidden><label id="selectorLabel" for="plans">Pedido acompanhado</label><select id="plans"><option value="">Selecione um pedido</option></select></section>
+<div id="empty"><p>Nenhuma etapa vinculada</p><p>O plano aparecerá quando o agente iniciar um pedido com várias etapas. Se já existir, selecione-o acima.</p></div>
+<main id="plan" hidden aria-labelledby="title">
+ <p class="eyebrow">Pedido atual</p><h2 id="title"></h2>
+ <div class="summary" aria-live="polite"><span id="count"></span><span id="run" class="badge"></span></div>
+ <div class="estimate-summary" aria-live="polite"><span class="estimate-label">Progresso estimado</span><strong class="estimate-value" id="percentage">0%</strong><span class="estimate-label">Tempo restante estimado</span><strong class="estimate-value" id="remaining">Sem estimativa</strong></div>
+ <div id="progress" class="meter" role="progressbar" aria-label="Progresso estimado" aria-valuemin="0" aria-valuemax="100"><div class="fill" id="fill"></div></div>
+ <p id="estimateHint" class="estimate-hint">Previsão aproximada, atualizada conforme as etapas avançam.</p>
+ <ol class="steps" id="steps"></ol>
+ <details id="history" hidden><summary>Pedidos anteriores</summary><div id="historyItems"></div></details>
+</main>
+<p id="connection" role="status">Conectando ao painel…</p>
+<script>
+const $=id=>document.getElementById(id);
+const labels={pending:'Pendente',in_progress:'Em execução',completed:'Concluída',blocked:'Bloqueada',skipped:'Dispensada'};
+const symbols={pending:'',in_progress:'›',completed:'✓',blocked:'!',skipped:'–'};
+let selected=null,initializing=true,busy=false,lastRevision=null,nextId=1;
+const pending=new Map();
+const embedded=window.parent!==window;
+const boundPanel=document.body.dataset.boundPanel==='true'||document.body.dataset.autoFloating==='true';
+const appliedHostVariables=new Set();
+function applyHostContext(context){
+ if(!context||typeof context!=='object')return;
+ const theme=context.theme;
+ if(theme==='light'||theme==='dark')document.documentElement.dataset.theme=theme;
+ const variables=context.styles?.variables;
+ if(!variables||typeof variables!=='object'||Array.isArray(variables))return;
+ for(const name of appliedHostVariables)document.documentElement.style.removeProperty(name);
+ appliedHostVariables.clear();
+ for(const [name,value] of Object.entries(variables)){
+  if(!/^--[a-zA-Z0-9_-]+$/.test(name)||typeof value!=='string')continue;
+  document.documentElement.style.setProperty(name,value);
+  appliedHostVariables.add(name);
+ }
+}
+function bindInput(input){
+ const id=input?.arguments?.threadId||input?.threadId;
+ if(typeof id!=='string'||!id.trim())return;
+ selected=id;lastRevision=null;
+}
+function request(method,params={}){
+ const id=nextId++;
+ return new Promise((resolve,reject)=>{
+  const timeout=setTimeout(()=>{pending.delete(id);reject(Error('O aplicativo não respondeu. Use Atualizar para tentar novamente.'));},12000);
+  pending.set(id,{resolve,reject,timeout});window.parent.postMessage({jsonrpc:'2.0',id,method,params},'*');
+ });
+}
+function notification(method,params={}){window.parent.postMessage({jsonrpc:'2.0',method,params},'*');}
+function dataFrom(result){if(result.isError)throw Error(result.content?.[0]?.text||'Não foi possível ler o plano.');return result.structuredContent||JSON.parse(result.content?.[0]?.text||'{}');}
+function estimatePlan(plan){
+ const steps=plan.steps||[];
+ const fraction=step=>step.status==='completed'||step.status==='skipped'?1:step.status==='in_progress'?Math.min(100,Math.max(0,Number.isFinite(step.progressPercent)?step.progressPercent:0))/100:0;
+ const hasTimeEstimate=steps.length>0&&steps.every(step=>Number.isInteger(step.estimatedMinutes)&&step.estimatedMinutes>0);
+ const weights=steps.map(step=>hasTimeEstimate?step.estimatedMinutes:1);
+ const total=weights.reduce((sum,value)=>sum+value,0);
+ const progressPercent=total?Math.round(steps.reduce((sum,step,index)=>sum+weights[index]*fraction(step),0)/total*100):0;
+ const remainingMinutes=hasTimeEstimate?Math.ceil(steps.reduce((sum,step)=>sum+(step.status==='skipped'?0:step.estimatedMinutes*(1-fraction(step))),0)):null;
+ return {progressPercent,remainingMinutes,hasTimeEstimate,blocked:steps.some(step=>step.status==='blocked')};
+}
+function formatDuration(minutes){const rounded=Math.max(0,Math.round(minutes));const hours=Math.floor(rounded/60);const rest=rounded%60;return hours?(rest?hours+' h '+rest+' min':hours+' h'):rounded+' min';}
+function showError(error){$('error').textContent=error.message;$('error').hidden=false;$('connection').textContent='Conexão pendente';}
+function accept(data){
+ if(boundPanel&&selected&&data.selectedThreadId&&data.selectedThreadId!==selected)return;
+ if(data.selectedThreadId){selected=data.selectedThreadId;try{window.openai?.setWidgetState({threadId:selected});}catch{}}
+ const plans=data.plans||[];
+ $('chooser').hidden=boundPanel||plans.length===0;
+ $('plans').replaceChildren(new Option('Selecione um pedido',''));
+ for(const plan of plans)$('plans').add(new Option(plan.title+' · '+plan.threadId.slice(-8),plan.threadId));
+ $('plans').value=selected||'';
+ const plan=data.plan;
+ $('empty').hidden=!!plan;$('plan').hidden=!plan;
+ $('error').hidden=true;
+ if(!plan){$('connection').textContent=plans.length?'Selecione o pedido desta conversa.':'Aguardando um plano.';return;}
+ const done=plan.steps.filter(s=>s.status==='completed').length;
+ const skipped=plan.steps.filter(s=>s.status==='skipped').length;
+ const blocked=plan.steps.some(s=>s.status==='blocked');
+ $('title').textContent=plan.title;
+ $('count').textContent=done+' de '+plan.steps.length+' concluídas'+(skipped?' · '+skipped+' dispensadas':'');
+ $('run').textContent=plan.runState==='finished'?'Finalizado':blocked?'Com bloqueio':'Em andamento';
+ const estimate=estimatePlan(plan),percentage=estimate.progressPercent;
+ $('percentage').textContent=percentage+'%';
+ $('remaining').textContent=estimate.remainingMinutes===null?'Sem estimativa':estimate.remainingMinutes===0?'Concluído':'~ '+formatDuration(estimate.remainingMinutes)+(estimate.blocked?' após desbloqueio':'');
+ $('estimateHint').textContent=estimate.hasTimeEstimate?'Estimativa de execução; não inclui esperas externas.': 'Tempo por etapa não informado.';
+ $('fill').style.width=percentage+'%';$('progress').setAttribute('aria-valuenow',percentage);
+ $('progress').setAttribute('aria-valuetext',percentage+'% estimado · '+$('count').textContent);
+ const opened=new Set([...document.querySelectorAll('.step details[open]')].map(e=>e.dataset.step));
+ $('steps').replaceChildren();
+ for(const step of plan.steps){
+  const row=document.createElement('li');row.className='step '+step.status;
+  if(step.status==='in_progress')row.setAttribute('aria-current','step');
+  const icon=document.createElement('span');icon.className='icon';icon.setAttribute('aria-hidden','true');icon.textContent=symbols[step.status];
+  const content=document.createElement('div');
+  const title=document.createElement('p');title.className='label';title.textContent=step.label;
+  const state=document.createElement('span');state.className='state';state.textContent=labels[step.status];
+  content.append(title,state);
+  if(step.note){const details=document.createElement('details');details.dataset.step=step.id;details.open=opened.has(step.id);const summary=document.createElement('summary');summary.textContent=step.status==='blocked'?'Ver impedimento':'Ver resultado';const note=document.createElement('p');note.textContent=step.note;details.append(summary,note);content.append(details);}
+  row.append(icon,content);$('steps').append(row);
+ }
+ $('history').hidden=!plan.history?.length;$('historyItems').replaceChildren();
+ for(const previous of [...(plan.history||[])].reverse()){
+  const item=document.createElement('p');item.className='history-item';const complete=previous.steps.filter(s=>s.status==='completed').length;item.textContent=previous.title+' · '+complete+'/'+previous.steps.length+' concluídas';$('historyItems').append(item);
+ }
+ $('connection').textContent='Atualizado às '+new Date(plan.updatedAt).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})+' · conversa '+plan.threadId.slice(-8);
+ if(embedded && lastRevision!==plan.revision){
+  request('ui/update-model-context',{content:[{type:'text',text:'Painel Andamento selecionado para threadId '+JSON.stringify(plan.threadId)+'. Pedido: '+plan.title+'. Etapas: '+plan.steps.map(s=>s.id+' '+s.status+' '+s.label).join('; ')}]}).catch(()=>{});
+ }
+ lastRevision=plan.revision;
+}
+async function refresh(){
+ if(busy||initializing)return;busy=true;
+ try{
+  if(boundPanel&&!selected){$('connection').textContent='Aguardando vínculo com esta conversa…';return;}
+  if(embedded){accept(dataFrom(await request('tools/call',{name:'get_progress',arguments:selected?{threadId:selected}:{}})));}
+  else {const r=await fetch('/api/progress'+(selected?'?threadId='+encodeURIComponent(selected):''));if(!r.ok)throw Error('Não foi possível ler o plano local.');accept(await r.json());}
+ }catch(error){showError(error);}finally{busy=false;}
+}
+window.addEventListener('message',event=>{
+ if(event.source!==window.parent)return;
+ const message=event.data;if(message?.jsonrpc!=='2.0')return;
+ if(message.id!==undefined&&pending.has(message.id)){const p=pending.get(message.id);pending.delete(message.id);clearTimeout(p.timeout);message.error?p.reject(Error(message.error.message)):p.resolve(message.result);return;}
+ if(message.method==='ui/notifications/tool-result'){
+  try{const data=dataFrom(message.params);if(data.selectedThreadId||data.plans)accept(data);}catch(error){showError(error);}
+ }
+ if(message.method==='ui/notifications/tool-input'){
+  bindInput(message.params);if(!initializing)refresh();
+ }
+ if(message.method==='ui/notifications/host-context-changed'){
+  applyHostContext(message.params?.hostContext||message.params);
+ }
+});
+$('refresh').addEventListener('click',refresh);
+$('plans').addEventListener('change',()=>{selected=$('plans').value||null;lastRevision=null;refresh();});
+async function connect(){
+ try{
+  if(embedded){
+   const initialized=await request('ui/initialize',{appInfo:{name:'andamento',version:'0.1.6'},appCapabilities:{},protocolVersion:'2026-01-26'});
+   applyHostContext(initialized.hostContext);notification('ui/notifications/initialized');
+   if(boundPanel)bindInput(window.openai?.toolInput);
+   else selected=window.openai?.widgetState?.threadId||selected;
+  }
+  else selected=new URLSearchParams(location.search).get('threadId');
+ }catch(error){showError(error);}finally{initializing=false;refresh();}
+}
+connect();
+setInterval(()=>{if(!document.hidden)refresh();},boundPanel?2000:5000);
+</script></body></html>

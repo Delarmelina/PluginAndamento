@@ -1,0 +1,19 @@
+{
+  "name": "andamento",
+  "version": "0.1.6",
+  "description": "Acompanhamento visual de pedidos com várias etapas, por conversa, durante a execução do Codex.",
+  "author": { "name": "Felipe Ferreira Delarmelina" },
+  "skills": "./skills/",
+  "mcpServers": "./.mcp.json",
+  "hooks": "./hooks/hooks.json",
+  "interface": {
+    "displayName": "Andamento",
+    "shortDescription": "Veja as etapas do pedido em tempo real",
+    "longDescription": "Painel por conversa com etapas pendentes, em execução, concluídas e bloqueadas. Armazenamento local e histórico incremental. Inclui gatilhos opcionais para lembrar o agente de manter o plano atualizado.",
+    "developerName": "Larry · Felipe",
+    "category": "Productivity",
+    "capabilities": ["Interactive", "Read", "Write"],
+    "brandColor": "#C99A4F",
+    "defaultPrompt": ["Mostre o andamento deste pedido no painel lateral."]
+  }
+}
