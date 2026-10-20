@@ -9,6 +9,16 @@ Antes de executar, crie etapas concretas e sucintas com start_plan. Use o identi
 
 Ao criar um plano, estime o tempo ativo de cada etapa em minutos e envie `stepEstimatesMinutes` na mesma ordem das etapas. São estimativas aproximadas; não inclua períodos de espera externa. Se uma etapa não puder ser estimada com responsabilidade, omita a lista para que o painel não invente um tempo restante. Para etapa em execução, envie `progressPercent` de 0 a 99 ao iniciar e revise-o em marcos significativos; 100% fica reservado para conclusão verificada. É uma estimativa de conclusão da etapa, não uma medição de tempo. Etapas concluídas ou dispensadas contam como 100%; pendentes ou bloqueadas como 0%. O painel calcula o progresso total ponderando pela duração estimada e mostra o tempo ativo restante; bloqueios são apresentados como tempo após desbloqueio.
 
+## Granularidade proporcional ao escopo
+
+Não use 3 ou 4 etapas como formato padrão nem imponha um teto fixo. Dimensione o plano pelo escopo, número de entregáveis, dependências, riscos e verificações necessárias:
+
+- Pedido pequeno e linear: normalmente 2–4 etapas.
+- Pedido médio, com mais de um entregável ou validação independente: normalmente 4–7 etapas.
+- Implementação grande, multifrente ou com integrações: use 8–12 ou mais etapas quando necessário. Não comprima descoberta, decisões, implementação, integração, testes, revisão de segurança/qualidade e publicação em poucos tópicos só para manter o plano curto.
+
+Cada etapa deve ser um marco de trabalho distinto, com resultado verificável. Divida uma etapa quando ela esconder decisões, entregáveis ou gates de validação independentes; não crie uma etapa para cada comando, arquivo trivial ou chamada de ferramenta. Para trabalhos extensos, exponha as fases na ordem das dependências e deixe claro o que será considerado concluído em cada uma. O painel aceita listas maiores; priorize fidelidade ao trabalho real em vez de simetria ou brevidade artificial.
+
 Mantenha o acompanhamento fora do fluxo do chat. Não publique checklist textual nem cartões inline. Ao iniciar o acompanhamento, use follow_progress com o threadId real para abrir diretamente o painel vinculado à conversa, sem seletor. Felipe aprovou a posição lateral já oferecida pelo Codex: preserve essa apresentação, sem exigir PiP, solicitar troca de modo ou criar janela externa. O valor técnico fullscreen não determina a geometria que Felipe vê. Abra uma vez, não em cada etapa. O painel já vinculado acompanha automaticamente os novos pedidos do mesmo chat. Se Felipe o fechar, só reabra quando ele pedir. open_panel permanece como acesso manual do aplicativo. view_progress é uma consulta de dados sem UI.
 
 Marque in_progress antes de iniciar uma etapa. Após conferir o resultado, marque completed com uma nota curta que descreva a evidência. Em caso de impedimento, marque blocked com a causa. Use skipped apenas para etapas realmente não aplicáveis ou dispensadas por Felipe.

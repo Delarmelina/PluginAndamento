@@ -5,7 +5,7 @@ import { readFile } from 'node:fs/promises';
 import { PlanStore, STATES } from './store.mjs';
 
 const store=new PlanStore();
-const server=new McpServer({name:'andamento',version:'0.1.6'});
+const server=new McpServer({name:'andamento',version:'0.1.7'});
 const UI='ui://andamento/painel.html';
 const CONVERSATION='ui://andamento/conversa.html';
 const annotations={readOnlyHint:true,destructiveHint:false,openWorldHint:false};

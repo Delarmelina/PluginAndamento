@@ -1,6 +1,6 @@
 {
   "name": "andamento",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "Acompanhamento visual de pedidos com várias etapas, por conversa, durante a execução do Codex.",
   "author": { "name": "Felipe Ferreira Delarmelina" },
   "skills": "./skills/",

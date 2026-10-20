@@ -4,7 +4,11 @@ Prova funcional de um plugin local do Codex com painel por conversa.
 
 ## Estado verificado em 16/10/2026
 
-### Direção atual — 0.1.6
+### Direção atual — 0.1.7
+
+A versão 0.1.7 orienta a criação de planos com granularidade proporcional ao escopo: em geral, 2–4 etapas para pedidos pequenos, 4–7 para médios e 8–12 ou mais para implementações grandes ou multifrentes. Não existe teto fixo; as etapas devem representar marcos verificáveis, sem fragmentar o plano por chamada de ferramenta.
+
+### Base funcional — 0.1.6
 
 A versão 0.1.6 acrescenta progresso estimado ponderado pela duração das etapas e tempo de execução restante. Cada plano pode registrar minutos estimados por etapa; o agente atualiza a estimativa percentual da etapa em execução nos marcos. O painel identifica os valores como estimativas, não inclui esperas externas e informa quando um bloqueio posterga o tempo restante. Planos antigos continuam funcionando e mostram “Sem estimativa” quando não têm duração registrada.
 
