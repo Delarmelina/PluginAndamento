@@ -154,7 +154,7 @@ $('plans').addEventListener('change',()=>{selected=$('plans').value||null;lastRe
 async function connect(){
  try{
   if(embedded){
-   const initialized=await request('ui/initialize',{appInfo:{name:'andamento',version:'0.1.7'},appCapabilities:{},protocolVersion:'2026-01-26'});
+   const initialized=await request('ui/initialize',{appInfo:{name:'andamento',version:'0.1.9'},appCapabilities:{},protocolVersion:'2026-01-26'});
    applyHostContext(initialized.hostContext);notification('ui/notifications/initialized');
    if(boundPanel)bindInput(window.openai?.toolInput);
    else selected=window.openai?.widgetState?.threadId||selected;

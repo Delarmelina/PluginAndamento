@@ -2,23 +2,24 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { z } from 'zod';
 import { readFile } from 'node:fs/promises';
+import { join } from 'node:path';
 import { PlanStore, STATES } from './store.mjs';
 
 const store=new PlanStore();
-const server=new McpServer({name:'andamento',version:'0.1.7'});
+const server=new McpServer({name:'andamento',version:'0.1.9'});
 const UI='ui://andamento/painel.html';
 const CONVERSATION='ui://andamento/conversa.html';
 const annotations={readOnlyHint:true,destructiveHint:false,openWorldHint:false};
 const result=data=>({content:[{type:'text',text:JSON.stringify(data)}],structuredContent:data});
 const handle=fn=>async args=>{try{return result(await fn(args));}catch(error){return {isError:true,content:[{type:'text',text:error.message}]};}};
-const panelResource=(uri,bound=false)=>async()=>({contents:[{uri,mimeType:'text/html;profile=mcp-app',text:(await readFile(new URL('./ui/panel.html',import.meta.url),'utf8')).replace('<body>',bound?'<body data-bound-panel="true">':'<body>'),_meta:{ui:{prefersBorder:false,csp:{connectDomains:[],resourceDomains:[]}},'openai/ui':{availableDisplayModes:['fullscreen']}}}]});
+const panelResource=(uri,bound=false)=>async()=>({contents:[{uri,mimeType:'text/html;profile=mcp-app',text:(await readFile(join(process.cwd(),'ui','panel.html'),'utf8')).replace('<body>',bound?'<body data-bound-panel="true">':'<body>'),_meta:{ui:{prefersBorder:false,csp:{connectDomains:[],resourceDomains:[]}},'openai/ui':{availableDisplayModes:['fullscreen']}}}]});
 server.registerResource('painel',UI,{mimeType:'text/html;profile=mcp-app'},panelResource(UI));
 server.registerResource('conversa',CONVERSATION,{mimeType:'text/html;profile=mcp-app'},panelResource(CONVERSATION,true));
 server.registerResource('painel-legado','ui://andamento/flutuante.html',{mimeType:'text/html;profile=mcp-app'},panelResource('ui://andamento/flutuante.html',true));
 const progress=async({threadId})=>({plan:threadId?await store.get(threadId):null,plans:await store.list(),selectedThreadId:threadId||null});
 server.registerTool('follow_progress',{
   title:'Acompanhar esta conversa',
-  description:'Abre diretamente o painel de acompanhamento vinculado a esta conversa, sem seletor. Preserve a posição lateral oferecida pelo Codex; não solicitar PiP ou janela externa. Use uma vez ao iniciar acompanhamento ou quando Felipe pedir reabertura, não em cada etapa. Requer threadId real.',
+  description:'Abre diretamente o painel de acompanhamento vinculado a esta conversa, sem seletor. Prefira a posição lateral oferecida pelo aplicativo; não solicitar PiP ou janela externa, a menos que a pessoa peça. Use uma vez ao iniciar acompanhamento ou quando a pessoa pedir reabertura, não em cada etapa. Requer threadId real.',
   inputSchema:{threadId:z.string().min(1).max(240)},annotations,
   _meta:{ui:{resourceUri:CONVERSATION}}
 },handle(async({threadId})=>({plan:await store.get(threadId),plans:[],selectedThreadId:threadId})));
