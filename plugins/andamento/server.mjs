@@ -6,7 +6,7 @@ import { join } from 'node:path';
 import { PlanStore, STATES } from './store.mjs';
 
 const store=new PlanStore();
-const server=new McpServer({name:'andamento',version:'0.1.9'});
+const server=new McpServer({name:'andamento',version:'0.1.10'});
 const UI='ui://andamento/painel.html';
 const CONVERSATION='ui://andamento/conversa.html';
 const annotations={readOnlyHint:true,destructiveHint:false,openWorldHint:false};

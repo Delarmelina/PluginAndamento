@@ -3,9 +3,15 @@ name: andamento
 description: Acompanhar visualmente a execução de implementações, abertura ou encerramento de sessão e pedidos com várias ações no painel Andamento, atualizando etapas por conversa. Não usar para perguntas simples sem execução.
 ---
 
+## Prioridade da conversa
+
+Antes de consultar ou alterar o Andamento, interprete a mensagem mais recente de Felipe. Uma orientação, correção ou mudança de rumo explícita prevalece sobre qualquer plano e ação anterior. Se ela for incompatível com o trabalho em curso, pause imediatamente as ações incompatíveis; preserve apenas o trabalho que continue válido e atualize o plano para refletir a direção corrigida. O plano é registro de acompanhamento, nunca uma ordem para ignorar a instrução atual.
+
+O plugin jamais bloqueia, rejeita, adia, dificulta ou exige confirmação para prompts, orientações ou ações do usuário. Não espere criar/atualizar um plano nem abrir o painel para reconhecer, responder ou executar a instrução. Hooks adicionam contexto; não reescrevem a mensagem do usuário. Se ferramentas ou painel estiverem indisponíveis, continue o trabalho normalmente e mencione apenas a limitação de acompanhamento quando relevante.
+
 Use o identificador real da conversa informado pelo gatilho do plugin como threadId. Nunca invente um identificador de chat. Se o gatilho não estiver ativo, use o identificador real disponível no contexto do aplicativo; se nenhum existir, explique a limitação antes de criar um plano solto.
 
-Antes de executar, crie etapas concretas e sucintas com start_plan. Use o identificador do turno como requestId quando disponível. Em continuação do mesmo pedido, consulte get_progress e atualize o plano existente; um novo pedido cria outro plano e preserva o histórico.
+Depois de interpretar o pedido vigente, crie etapas concretas e sucintas com start_plan para tarefas com várias ações. Use o identificador do turno como requestId quando disponível. Em uma orientação que redirecione o trabalho em andamento, consulte get_progress e atualize o plano para representar a nova direção; não continue ações incompatíveis só porque constam do plano. Para um novo pedido independente, crie outro plano e preserve o histórico.
 
 Ao criar um plano, estime o tempo ativo de cada etapa em minutos e envie `stepEstimatesMinutes` na mesma ordem das etapas. São estimativas aproximadas; não inclua períodos de espera externa. Se uma etapa não puder ser estimada com responsabilidade, omita a lista para que o painel não invente um tempo restante. Para etapa em execução, envie `progressPercent` de 0 a 99 ao iniciar e revise-o em marcos significativos; 100% fica reservado para conclusão verificada. É uma estimativa de conclusão da etapa, não uma medição de tempo. Etapas concluídas ou dispensadas contam como 100%; pendentes ou bloqueadas como 0%. O painel calcula o progresso total ponderando pela duração estimada e mostra o tempo ativo restante; bloqueios são apresentados como tempo após desbloqueio.
 

@@ -2,7 +2,15 @@
 
 Prova funcional de um plugin local do Codex com painel por conversa.
 
-## Estado verificado em 16/10/2026
+## Estado verificado em 22/10/2026
+
+### Direção atual — 0.1.10: painel passivo durante orientação
+
+A lateral apenas consulta e renderiza o plano. Ela não envia atualizações automáticas por `ui/update-model-context`; esse canal só deve ser usado quando uma seleção ou edição feita na própria UI precisar ser conhecida pelo modelo. Os hooks continuam adicionando contexto sem emitir decisão de bloqueio nem reescrever mensagens. A correção tem teste de regressão para a sequência de atualizar/listar etapas e, em seguida, enviar uma nova orientação. A causa do botão nativo “Orientar” ficar indisponível ainda precisa de confirmação no host real.
+
+Para testar esta fonte, rode `npm test` dentro de `plugins/andamento`. Depois de atualizar a instalação ativa, reinicie o aplicativo e reabra a lateral antiga. A verificação automatizada não substitui o reteste do botão nativo no Codex.
+
+## Histórico técnico até 0.1.9
 
 ### Direção atual — 0.1.7
 

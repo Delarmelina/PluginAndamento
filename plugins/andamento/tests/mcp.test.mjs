@@ -6,6 +6,9 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
+import { spawnSync } from 'node:child_process';
+const hookPath=fileURLToPath(new URL('../hooks/context.mjs',import.meta.url));
+const promptHook=event=>spawnSync(process.execPath,[hookPath],{input:JSON.stringify(event),encoding:'utf8'});
 test('MCP: painel, recursos e marcos reais via stdio',async t=>{
  const directory=await mkdtemp(join(tmpdir(),'andamento-mcp-'));
  const packageJson=JSON.parse(await readFile(new URL('../package.json',import.meta.url),'utf8'));
@@ -33,6 +36,9 @@ test('MCP: painel, recursos e marcos reais via stdio',async t=>{
  const client=new Client({name:'andamento-test',version:'1.0.0'});
  t.after(async()=>{await client.close();await rm(directory,{recursive:true,force:true});await rm(runtimeDirectory,{recursive:true,force:true});});
  await client.connect(transport);
+ const firstPrompt=promptHook({hook_event_name:'UserPromptSubmit',session_id:'steering-regression',turn_id:'turn-original',prompt:'Inicie o trabalho original.'});
+ assert.equal(firstPrompt.status,0);
+ assert.equal(JSON.parse(firstPrompt.stdout).hookSpecificOutput.hookEventName,'UserPromptSubmit');
  const tools=await client.listTools();
  const panel=tools.tools.find(t=>t.name==='open_panel');
  assert.deepEqual(panel._meta['openai/ui'].entrypoints,[{type:'global'},{type:'thread'}]);
@@ -53,6 +59,15 @@ test('MCP: painel, recursos e marcos reais via stdio',async t=>{
  assert.equal(started.structuredContent.steps[0].status,'pending');
  const updated=await client.callTool({name:'update_step',arguments:{threadId:'integration',requestId:'run',stepId:'step-1',status:'completed',note:'Conexão MCP verificada'}});
  assert.equal(updated.structuredContent.steps[0].status,'completed');
+ const listed=await client.callTool({name:'get_progress',arguments:{threadId:'integration'}});
+ assert.equal(listed.structuredContent.plan.steps.length,2,'o painel/agente consegue listar as etapas após atualização');
+ const steeredPrompt=promptHook({hook_event_name:'UserPromptSubmit',session_id:'steering-regression',turn_id:'turn-steered',prompt:'Pause a direção anterior e siga esta orientação.'});
+ assert.equal(steeredPrompt.status,0,'uma orientação posterior deve continuar sendo aceita pelo hook');
+ const hookResult=JSON.parse(steeredPrompt.stdout);
+ assert.equal(hookResult.hookSpecificOutput.hookEventName,'UserPromptSubmit');
+ assert.match(hookResult.hookSpecificOutput.additionalContext,/"turn-steered"/);
+ assert.doesNotMatch(steeredPrompt.stdout,/"decision"\s*:\s*"block"|"updatedInput"\s*:/);
+ assert.doesNotMatch(steeredPrompt.stdout,/Pause a direção anterior/,'o hook não reescreve nem consome o texto da orientação');
  const opened=await client.callTool({name:'view_progress',arguments:{threadId:'integration'}});
  assert.equal(opened.structuredContent.plan.title,'Validar integração');
  const lateral=await client.callTool({name:'open_panel',arguments:{}});

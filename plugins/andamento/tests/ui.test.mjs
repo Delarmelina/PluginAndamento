@@ -8,7 +8,7 @@ async function panel(t,{bound=false,legacy=false,input='globals',displayMode='fu
  let html=await readFile(new URL('../ui/panel.html',import.meta.url),'utf8');
  if(bound)html=html.replace('<body>',legacy?'<body data-auto-floating="true">':'<body data-bound-panel="true">');
  let title='<img src=x onerror=alert(1)>',status='pending',revision=1,modeCalls=0;
- const calls=[],intervals=[];let sendHostMessage=()=>{};
+ const calls=[],hostMethods=[],intervals=[];let sendHostMessage=()=>{};
  const makePlan=id=>({threadId:id,requestId:title,title:id==='current-chat'?title:'Outro chat',revision,updatedAt:new Date().toISOString(),runState:'active',steps:[{id:'step-1',label:'Conferir resultado',status:id==='current-chat'?status:'pending',note:'',updatedAt:new Date().toISOString()}],history:[]});
  const dom=new JSDOM(html,{url:'https://andamento.local/',runScripts:'dangerously',pretendToBeVisual:true,beforeParse(window){
   window.setInterval=(fn,ms)=>{intervals.push(ms);return 1;};
@@ -16,6 +16,7 @@ async function panel(t,{bound=false,legacy=false,input='globals',displayMode='fu
   sendHostMessage=send;
   const data=id=>({plan:id?makePlan(id):null,selectedThreadId:id,plans:['current-chat','other-chat'].map(threadId=>({threadId,title:makePlan(threadId).title}))});
   const host={postMessage(message){
+   hostMethods.push(message.method);
    if(message.method==='ui/notifications/initialized'&&bound){
     if(input==='notification')send('ui/notifications/tool-input',{arguments:{threadId:'current-chat'}});
     if(input==='result')send('ui/notifications/tool-result',{structuredContent:data('current-chat')});
@@ -33,7 +34,7 @@ async function panel(t,{bound=false,legacy=false,input='globals',displayMode='fu
   if(hasModeApi)window.openai.requestDisplayMode=()=>{modeCalls++;throw Error('Não solicitar mudança de modo');};
  }});
  t.after(()=>dom.window.close());
- return {dom,calls,intervals,get modeCalls(){return modeCalls;},notify:sendHostMessage,update(nextTitle,nextStatus){title=nextTitle;status=nextStatus;revision++;dom.window.document.getElementById('refresh').click();}};
+ return {dom,calls,hostMethods,intervals,get modeCalls(){return modeCalls;},notify:sendHostMessage,update(nextTitle,nextStatus){title=nextTitle;status=nextStatus;revision++;dom.window.document.getElementById('refresh').click();}};
 }
 
 test('painel manual mantém seletor, acessibilidade e texto seguro',async t=>{
@@ -63,6 +64,7 @@ for(const input of ['globals','notification','result'])for(const hasModeApi of [
  ui.update('Próximo pedido neste chat','in_progress');
  await waitFor(()=>doc.getElementById('title').textContent==='Próximo pedido neste chat');
  assert.equal(doc.querySelector('.step').getAttribute('aria-current'),'step');
+ assert.equal(ui.hostMethods.includes('ui/update-model-context'),false,'a lateral não deve injetar alterações no contexto do turno ativo');
 });
 
 test('recurso legado também renderiza sem bloqueio de apresentação',async t=>{

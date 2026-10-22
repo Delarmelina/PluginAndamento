@@ -21606,7 +21606,7 @@ var PlanStore = class {
 
 // server.mjs
 var store = new PlanStore();
-var server = new McpServer({ name: "andamento", version: "0.1.9" });
+var server = new McpServer({ name: "andamento", version: "0.1.10" });
 var UI = "ui://andamento/painel.html";
 var CONVERSATION = "ui://andamento/conversa.html";
 var annotations = { readOnlyHint: true, destructiveHint: false, openWorldHint: false };

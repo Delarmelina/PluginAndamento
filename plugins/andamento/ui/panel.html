@@ -35,7 +35,7 @@ body:is([data-bound-panel],[data-auto-floating]){padding:12px}body:is([data-boun
 const $=id=>document.getElementById(id);
 const labels={pending:'Pendente',in_progress:'Em execução',completed:'Concluída',blocked:'Bloqueada',skipped:'Dispensada'};
 const symbols={pending:'',in_progress:'›',completed:'✓',blocked:'!',skipped:'–'};
-let selected=null,initializing=true,busy=false,lastRevision=null,nextId=1;
+let selected=null,initializing=true,busy=false,nextId=1;
 const pending=new Map();
 const embedded=window.parent!==window;
 const boundPanel=document.body.dataset.boundPanel==='true'||document.body.dataset.autoFloating==='true';
@@ -57,7 +57,7 @@ function applyHostContext(context){
 function bindInput(input){
  const id=input?.arguments?.threadId||input?.threadId;
  if(typeof id!=='string'||!id.trim())return;
- selected=id;lastRevision=null;
+ selected=id;
 }
 function request(method,params={}){
  const id=nextId++;
@@ -122,10 +122,9 @@ function accept(data){
   const item=document.createElement('p');item.className='history-item';const complete=previous.steps.filter(s=>s.status==='completed').length;item.textContent=previous.title+' · '+complete+'/'+previous.steps.length+' concluídas';$('historyItems').append(item);
  }
  $('connection').textContent='Atualizado às '+new Date(plan.updatedAt).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})+' · conversa '+plan.threadId.slice(-8);
- if(embedded && lastRevision!==plan.revision){
-  request('ui/update-model-context',{content:[{type:'text',text:'Painel Andamento selecionado para threadId '+JSON.stringify(plan.threadId)+'. Pedido: '+plan.title+'. Etapas: '+plan.steps.map(s=>s.id+' '+s.status+' '+s.label).join('; ')}]}).catch(()=>{});
- }
- lastRevision=plan.revision;
+ // The panel is a passive view. Do not inject plan updates into the active model
+ // turn: the agent can query get_progress when needed, and host context mutation
+ // here can interfere with in-progress user steering.
 }
 async function refresh(){
  if(busy||initializing)return;busy=true;
@@ -150,11 +149,11 @@ window.addEventListener('message',event=>{
  }
 });
 $('refresh').addEventListener('click',refresh);
-$('plans').addEventListener('change',()=>{selected=$('plans').value||null;lastRevision=null;refresh();});
+$('plans').addEventListener('change',()=>{selected=$('plans').value||null;refresh();});
 async function connect(){
  try{
   if(embedded){
-   const initialized=await request('ui/initialize',{appInfo:{name:'andamento',version:'0.1.9'},appCapabilities:{},protocolVersion:'2026-01-26'});
+   const initialized=await request('ui/initialize',{appInfo:{name:'andamento',version:'0.1.10'},appCapabilities:{},protocolVersion:'2026-01-26'});
    applyHostContext(initialized.hostContext);notification('ui/notifications/initialized');
    if(boundPanel)bindInput(window.openai?.toolInput);
    else selected=window.openai?.widgetState?.threadId||selected;
